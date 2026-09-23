@@ -1,0 +1,9 @@
+{
+  "id": "nexus-wallpaper",
+  "name": "Nexus Wallpaper",
+  "version": "1.0.0",
+  "minAppVersion": "1.13.0",
+  "description": "Wallpaper layer + liquid-glass UI skin for Obsidian, ported from dsh-wallpaper-engine.",
+  "author": "Lin",
+  "isDesktopOnly": true
+}

@@ -1,0 +1,21 @@
+{
+  "name": "nexus-wallpaper",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "author": "Lin",
+  "description": "Wallpaper layer and liquid-glass UI skin for Obsidian.",
+  "scripts": {
+    "dev": "node esbuild.config.mjs",
+    "build": "node esbuild.config.mjs production",
+    "typecheck": "tsc --noEmit",
+    "deploy": "node scripts/deploy.mjs"
+  },
+  "devDependencies": {
+    "@types/node": "^22.13.10",
+    "builtin-modules": "^5.0.0",
+    "esbuild": "^0.25.0",
+    "obsidian": "^1.13.0",
+    "typescript": "^5.8.2"
+  }
+}

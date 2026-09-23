@@ -1,0 +1,241 @@
+/* ==========================================================================
+ * Nexus Wallpaper — liquid-glass UI skin
+ * --------------------------------------------------------------------------
+ * Ported from dsh-wallpaper-engine (client.js CSS):
+ *   - #nexus-wallpaper-layer  fixed, z-index -2, holds the <video>/<img>
+ *   - #nexus-wallpaper-scrim  fixed, z-index -1, dark scrim over the media
+ *   - body[data-nwp-wallpaper="on"] gates the whole skin; the plugin pushes
+ *     all knobs as --nwp-* custom properties inline on <body>.
+ *
+ * Only stable Obsidian classes and the plugin's own ids/attributes are
+ * targeted — never generated/hashed class names.
+ *
+ * Known pitfall (from NexusThemes base.css v1.0.1): backdrop-filter on the
+ * titlebar renders as a black strip on some display paths, so .titlebar,
+ * .status-bar and .ribbon only ever get translucent fills here.
+ * ========================================================================== */
+
+/* --- Wallpaper layers ------------------------------------------------------ */
+/* Obsidian marks body.is-frameless > .app-container ~ * as no-drag.
+   Both decorative layers are appended there and cover the whole window.
+   Clear that exclusion: pointer-events:none alone does not clear native
+   window hit-test regions. Keep the existing titlebar/buttons in control. */
+#nexus-wallpaper-layer,
+#nexus-wallpaper-scrim {
+  -webkit-app-region: initial;
+  app-region: initial;
+}
+
+#nexus-wallpaper-layer {
+  position: fixed;
+  inset: 0;
+  z-index: -2;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+#nexus-wallpaper-scrim {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background: var(--nwp-scrim-color, rgba(0, 0, 0, 0.25));
+}
+
+.nwp-media {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: var(--nwp-object-fit, cover);
+  /* "none" at identity avoids a permanent offscreen filter layer on the video */
+  filter: var(--nwp-media-filter, none);
+  transform: var(--nwp-wallpaper-transform, none);
+  transform-origin: center;
+}
+
+.nwp-media--web {
+  border: 0;
+  background: transparent;
+}
+
+/* --- contain-blur ratio padding ---------------------------------------------
+   A blurred cover copy fills the letterbox bars behind a contained front, so
+   odd-ratio sources (e.g. phone wallpapers) never show dead black bars. */
+.nwp-fill {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+.nwp-fill-backdrop {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+  filter: blur(28px) brightness(0.7) saturate(1.1);
+  transform: scale(1.12);
+  transform-origin: center;
+}
+
+.nwp-fill .nwp-media {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+}
+
+/* --- Skin gate -------------------------------------------------------------
+   The theme's body canvas (gradient) is covered by the wallpaper layer, and
+   its ambient flow animation becomes invisible work, so stop it. */
+body[data-nwp-wallpaper="on"] {
+  animation: none !important;
+}
+
+/* --- Transparent shell chain ------------------------------------------------
+   Mirrors the Nexus theme chain so the skin also works on the default theme.
+   !important is intentional: wallpaper mode overrides every theme. */
+body[data-nwp-wallpaper="on"] > .app-container,
+body[data-nwp-wallpaper="on"] .workspace,
+body[data-nwp-wallpaper="on"] .workspace-split,
+body[data-nwp-wallpaper="on"] .workspace-tabs,
+body[data-nwp-wallpaper="on"] .workspace-tab-container,
+body[data-nwp-wallpaper="on"] .workspace-leaf {
+  background-color: transparent !important;
+}
+
+/* Core paints three extra films over the central area; neutralize them. */
+body[data-nwp-wallpaper="on"] .workspace-split.mod-root,
+body[data-nwp-wallpaper="on"] .workspace-split.mod-root .workspace-tabs .workspace-leaf {
+  background-color: transparent !important;
+}
+
+/* Core sets isolation: isolate on .workspace-leaf, which starts a backdrop
+   root and blinds every backdrop-filter below it. */
+body[data-nwp-wallpaper="on"] .workspace-leaf {
+  isolation: auto;
+}
+
+body[data-nwp-wallpaper="on"] .workspace-leaf-content.is-read-mode .markdown-preview-view {
+  background-color: transparent;
+}
+
+/* --- Central reading surface -------------------------------------------------
+   ONE glass veil for every root view — markdown notes and plugin views
+   (Workbench, outline, ...) share the same recipe and the same
+   --nwp-content-alpha knob, so the whole middle column reads as one glass
+   plate. Views that paint their own opaque background simply cover it.
+   backdrop-filter is gated on data-nwp-glass-blur for a plain-tint fallback. */
+body[data-nwp-wallpaper="on"][data-nwp-glass-blur="on"] .workspace-split.mod-root .workspace-leaf-content .view-content {
+  background-color: color-mix(in srgb, var(--nwp-glass-color, #0d1524) var(--nwp-content-alpha, 40%), transparent) !important;
+  background-image: linear-gradient(180deg,
+      rgba(255, 255, 255, 0.10),
+      rgba(255, 255, 255, 0.03) 38%,
+      rgba(255, 255, 255, 0.01));
+  -webkit-backdrop-filter: blur(var(--nwp-blur, 16px)) saturate(var(--nwp-saturate, 1.8)) brightness(var(--nwp-glass-brightness, 1.04)) contrast(1.01) !important;
+  backdrop-filter: blur(var(--nwp-blur, 16px)) saturate(var(--nwp-saturate, 1.8)) brightness(var(--nwp-glass-brightness, 1.04)) contrast(1.01) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, calc(var(--nwp-border-alpha, 0.35) * 0.5)),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.05),
+    inset 0 0 0 0.5px rgba(255, 255, 255, calc(var(--nwp-border-alpha, 0.35) * 0.2));
+}
+
+body[data-nwp-wallpaper="on"][data-nwp-glass-blur="off"] .workspace-split.mod-root .workspace-leaf-content .view-content {
+  background-color: color-mix(in srgb, var(--nwp-glass-color, #0d1524) var(--nwp-content-plate, 72%), transparent) !important;
+}
+
+/* --- Side dock glass ---------------------------------------------------------
+   One continuous glass surface per dock (no stacked backdrop layers), with
+   the inner tabs/leafs/content transparent so it shows through. */
+body[data-nwp-wallpaper="on"] .mod-left-split .workspace-tabs,
+body[data-nwp-wallpaper="on"] .mod-left-split .workspace-tab-container,
+body[data-nwp-wallpaper="on"] .mod-left-split .workspace-leaf,
+body[data-nwp-wallpaper="on"] .mod-left-split .workspace-leaf-content,
+body[data-nwp-wallpaper="on"] .mod-left-split .view-content,
+body[data-nwp-wallpaper="on"] .mod-right-split .workspace-tabs,
+body[data-nwp-wallpaper="on"] .mod-right-split .workspace-tab-container,
+body[data-nwp-wallpaper="on"] .mod-right-split .workspace-leaf,
+body[data-nwp-wallpaper="on"] .mod-right-split .workspace-leaf-content,
+body[data-nwp-wallpaper="on"] .mod-right-split .view-content {
+  background-color: transparent !important;
+}
+
+body[data-nwp-wallpaper="on"][data-nwp-sidebar-glass="on"][data-nwp-glass-blur="on"] .workspace-split.mod-left-split,
+body[data-nwp-wallpaper="on"][data-nwp-sidebar-glass="on"][data-nwp-glass-blur="on"] .workspace-split.mod-right-split {
+  background-color: color-mix(in srgb, var(--nwp-sidebar-color, #ffffff) var(--nwp-sidebar-tint, 30%), transparent) !important;
+  background-image: linear-gradient(180deg,
+      rgba(255, 255, 255, calc(var(--nwp-sidebar-sheen, 1) * 0.14)),
+      rgba(255, 255, 255, calc(var(--nwp-sidebar-sheen, 1) * 0.04)) 38%,
+      rgba(255, 255, 255, calc(var(--nwp-sidebar-sheen, 1) * 0.01)));
+  -webkit-backdrop-filter: blur(var(--nwp-sidebar-blur, 16px)) saturate(var(--nwp-sidebar-saturate, 1.8)) brightness(var(--nwp-glass-brightness, 1.04)) contrast(1.01) !important;
+  backdrop-filter: blur(var(--nwp-sidebar-blur, 16px)) saturate(var(--nwp-sidebar-saturate, 1.8)) brightness(var(--nwp-glass-brightness, 1.04)) contrast(1.01) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, calc(var(--nwp-sidebar-sheen, 1) * 0.32)),
+    inset 0 -1px 0 rgba(255, 255, 255, calc(var(--nwp-sidebar-sheen, 1) * 0.08)),
+    inset 0 0 0 0.5px rgba(255, 255, 255, calc(var(--nwp-sidebar-sheen, 1) * 0.06));
+}
+
+/* Blur off: same tint and sheen, but plain compositing. */
+body[data-nwp-wallpaper="on"][data-nwp-sidebar-glass="on"][data-nwp-glass-blur="off"] .workspace-split.mod-left-split,
+body[data-nwp-wallpaper="on"][data-nwp-sidebar-glass="on"][data-nwp-glass-blur="off"] .workspace-split.mod-right-split {
+  background-color: color-mix(in srgb, var(--nwp-sidebar-color, #ffffff) calc(var(--nwp-sidebar-tint, 30%) * 2.2), transparent) !important;
+  background-image: linear-gradient(180deg,
+      rgba(255, 255, 255, calc(var(--nwp-sidebar-sheen, 1) * 0.14)),
+      rgba(255, 255, 255, calc(var(--nwp-sidebar-sheen, 1) * 0.04)) 38%,
+      rgba(255, 255, 255, calc(var(--nwp-sidebar-sheen, 1) * 0.01)));
+}
+
+/* --- Ribbon / titlebar / status bar -----------------------------------------
+   Translucent fills only — no backdrop-filter (titlebar black-strip pitfall). */
+body[data-nwp-wallpaper="on"] .ribbon {
+  background-color: color-mix(in srgb, var(--nwp-sidebar-color, #ffffff) var(--nwp-sidebar-tint, 30%), transparent);
+}
+
+body[data-nwp-wallpaper="on"] .titlebar {
+  background-color: color-mix(in srgb, var(--nwp-glass-color, #0d1524) 18%, transparent);
+}
+
+body[data-nwp-wallpaper="on"] .status-bar {
+  background-color: color-mix(in srgb, var(--nwp-glass-color, #0d1524) 24%, transparent);
+}
+
+/* --- Root tab strip ----------------------------------------------------------
+ * Retain the subtle strip tint for appearance. The v0.2.7 hypothesis that
+ * this tint restores dragging failed manual testing; the actual exclusion
+ * comes from the decorative body siblings, cleared above. */
+body[data-nwp-wallpaper="on"] .workspace-tab-header-container {
+  background-color: color-mix(in srgb, var(--nwp-glass-color, #0d1524) 4%, transparent);
+}
+
+/* NOTE: do NOT promote the drag strips (transform/translateZ/composited
+   layers) — Chromium drops -webkit-app-region on transformed elements, which
+   makes dragging worse. Drag-region fixes must keep these elements plain. */
+
+body[data-nwp-wallpaper="on"] .workspace-tab-header.is-active {
+  background-color: color-mix(in srgb, var(--nwp-glass-color, #0d1524) calc(var(--nwp-glass-alpha, 0.2) * 100%), transparent);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, calc(var(--nwp-border-alpha, 0.35) * 0.4)),
+    inset 0 0 0 0.5px rgba(255, 255, 255, calc(var(--nwp-border-alpha, 0.35) * 0.18));
+}
+
+body[data-nwp-wallpaper="on"] .workspace-tabs.mod-top .workspace-tab-header-container {
+  border-bottom-color: rgba(180, 190, 235, var(--nwp-border-alpha, 0.35));
+}
+
+/* --- No-backdrop-filter fallback --------------------------------------------
+   Raise the plates to near-opaque so text stays readable without blur. */
+@supports not ((backdrop-filter: blur(2px)) or (-webkit-backdrop-filter: blur(2px))) {
+  body[data-nwp-wallpaper="on"][data-nwp-sidebar-glass="on"] .workspace-split.mod-left-split,
+  body[data-nwp-wallpaper="on"][data-nwp-sidebar-glass="on"] .workspace-split.mod-right-split {
+    background-color: color-mix(in srgb, var(--nwp-sidebar-color, #ffffff) 92%, transparent) !important;
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
+  }
+
+  body[data-nwp-wallpaper="on"] .workspace-split.mod-root .workspace-leaf-content .view-content {
+    background-color: color-mix(in srgb, var(--nwp-glass-color, #0d1524) 88%, transparent) !important;
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
+  }
+}
