@@ -1,16 +1,16 @@
 import { Notice, Plugin } from "obsidian";
 import { DEFAULT_SETTINGS, sanitizeSettings } from "./types";
-import type { NexusWallpaperSettings } from "./types";
+import type { ObsidianWallpaperSettings } from "./types";
 import { isWeSource, listFolderMedia, resolveSource, resolveWeItem, weIdOf } from "./sources";
 import type { ResolvedSource } from "./sources";
 import { scanWallpapers } from "./we-scan";
 import { MediaServer } from "./we-server";
 import { WallpaperLayer } from "./layer";
-import { NexusWallpaperSettingTab } from "./settings";
+import { ObsidianWallpaperSettingTab } from "./settings";
 import { StaticSceneRenderer } from "./scene-static";
 
-export default class NexusWallpaperPlugin extends Plugin {
-  settings: NexusWallpaperSettings = DEFAULT_SETTINGS;
+export default class ObsidianWallpaperPlugin extends Plugin {
+  settings: ObsidianWallpaperSettings = DEFAULT_SETTINGS;
   private readonly weServer = new MediaServer();
   private readonly staticRenderer = new StaticSceneRenderer();
   private readonly wallpaper = new WallpaperLayer(this.weServer, this.staticRenderer);
@@ -27,7 +27,7 @@ export default class NexusWallpaperPlugin extends Plugin {
       await this.saveData(this.settings);
     }
 
-    this.addSettingTab(new NexusWallpaperSettingTab(this.app, this));
+    this.addSettingTab(new ObsidianWallpaperSettingTab(this.app, this));
 
     this.addCommand({
       id: "toggle-wallpaper",

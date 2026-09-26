@@ -2,8 +2,8 @@
  * Obsidian Wallpapers — liquid-glass UI skin
  * --------------------------------------------------------------------------
  * Ported from dsh-wallpaper-engine (client.js CSS):
- *   - #nexus-wallpaper-layer  fixed, z-index -2, holds the <video>/<img>
- *   - #nexus-wallpaper-scrim  fixed, z-index -1, dark scrim over the media
+ *   - #obsidian-wallpaper-layer  fixed, z-index -2, holds the <video>/<img>
+ *   - #obsidian-wallpaper-scrim  fixed, z-index -1, dark scrim over the media
  *   - body[data-nwp-wallpaper="on"] gates the whole skin; the plugin pushes
  *     all knobs as --nwp-* custom properties inline on <body>.
  *
@@ -20,13 +20,13 @@
    Both decorative layers are appended there and cover the whole window.
    Clear that exclusion: pointer-events:none alone does not clear native
    window hit-test regions. Keep the existing titlebar/buttons in control. */
-#nexus-wallpaper-layer,
-#nexus-wallpaper-scrim {
+#obsidian-wallpaper-layer,
+#obsidian-wallpaper-scrim {
   -webkit-app-region: initial;
   app-region: initial;
 }
 
-#nexus-wallpaper-layer {
+#obsidian-wallpaper-layer {
   position: fixed;
   inset: 0;
   z-index: -2;
@@ -34,7 +34,7 @@
   pointer-events: none;
 }
 
-#nexus-wallpaper-scrim {
+#obsidian-wallpaper-scrim {
   position: fixed;
   inset: 0;
   z-index: -1;

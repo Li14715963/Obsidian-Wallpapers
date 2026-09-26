@@ -20,7 +20,7 @@ export interface WeItem {
   previewSize: string;
 }
 
-export interface NexusWallpaperSettings {
+export interface ObsidianWallpaperSettings {
   /** Master switch: mounts the layer, sets body[data-nwp-wallpaper] and drives the glass skin. */
   enabled: boolean;
   /** Vault-relative media path or http(s) URL. Empty = glass-only mode over the theme canvas. */
@@ -78,7 +78,7 @@ export interface NexusWallpaperSettings {
   sceneFps: 15 | 30 | 60;
 }
 
-export const DEFAULT_SETTINGS: NexusWallpaperSettings = {
+export const DEFAULT_SETTINGS: ObsidianWallpaperSettings = {
   enabled: false,
   source: "",
   playlistFolder: "",
@@ -148,7 +148,7 @@ function sanitizeWeCache(value: unknown): WeItem[] {
   return out;
 }
 
-export function sanitizeSettings(raw: unknown): NexusWallpaperSettings {
+export function sanitizeSettings(raw: unknown): ObsidianWallpaperSettings {
   const r = (raw ?? {}) as Record<string, unknown>;
   const fit = str(r.objectFit, "cover");
   return {

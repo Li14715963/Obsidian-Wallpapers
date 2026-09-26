@@ -53,6 +53,13 @@ try {
 
   const targetDir = path.join(vaultConfig, "plugins", manifest.id);
   mkdirSync(targetDir, { recursive: true });
+  const legacyData = path.join(vaultConfig, "plugins", "nexus-wallpaper", "data.json");
+  const targetData = path.join(targetDir, "data.json");
+  if (manifest.id === "obsidian-wallpaper" && !existsSync(targetData) && existsSync(legacyData)) {
+    copyFileSync(legacyData, targetData);
+    if (sha256(legacyData) !== sha256(targetData)) throw new Error("Settings migration SHA-256 mismatch.");
+    console.log("Migrated legacy nexus-wallpaper settings. Disable the old plugin before enabling obsidian-wallpaper.");
+  }
   for (const file of files) {
     const source = path.join(projectRoot, file);
     const target = path.join(targetDir, file);

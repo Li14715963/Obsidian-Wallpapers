@@ -6,9 +6,9 @@ Obsidian Wallpapers 是 Obsidian 桌面插件，可将图片或视频显示在�
 
 | 项目 | 信息 |
 | --- | --- |
-| 版本 | 1.1.0 |
+| 版本 | 1.1.1 |
 | 作者 | Lin |
-| 插件 ID | `nexus-wallpaper` |
+| 插件 ID | `obsidian-wallpaper` |
 | 最低 Obsidian 版本 | 1.13.0 |
 | 平台 | Obsidian 桌面版 |
 
@@ -16,22 +16,22 @@ Obsidian Wallpapers 是 Obsidian 桌面插件，可将图片或视频显示在�
 
 ### 需要安装的文件
 
-本项目根目录中的 `nexus-wallpaper` 文件夹就是可直接安装的完整插件包，包含以下三个运行文件，以及 `LICENSE` 和 `THIRD_PARTY_NOTICES.md`：
+本项目根目录中的 `obsidian-wallpaper` 文件夹就是可直接安装的完整插件包，包含以下三个运行文件，以及 `LICENSE` 和 `THIRD_PARTY_NOTICES.md`：
 
 - `main.js`：插件运行代码
 - `manifest.json`：插件名称、版本和兼容性信息
 - `styles.css`：壁纸和玻璃外观样式
 
-将整个 `nexus-wallpaper` 文件夹复制到目标 Vault 的 `.obsidian/plugins/` 目录。安装后的完整路径为：
+将整个 `obsidian-wallpaper` 文件夹复制到目标 Vault 的 `.obsidian/plugins/` 目录。安装后的完整路径为：
 
 ```text
-<Vault 路径>/.obsidian/plugins/nexus-wallpaper/
+<Vault 路径>/.obsidian/plugins/obsidian-wallpaper/
 ```
 
 例如，安装到 Obsidian Sandbox 时：
 
 ```text
-C:\Users\YourName\AppData\Roaming\obsidian\Obsidian Sandbox\.obsidian\plugins\nexus-wallpaper\
+C:\Users\YourName\AppData\Roaming\obsidian\Obsidian Sandbox\.obsidian\plugins\obsidian-wallpaper\
 ```
 
 如果 `plugins` 目录不存在，请先创建它。Windows 资源管理器可能隐藏 `.obsidian`；可以在地址栏直接输入路径，或打开“显示隐藏的项目”。不要把项目根目录、`src` 或 `node_modules` 复制到 `plugins` 中。Obsidian 首次加载插件后会在插件目录自动创建 `data.json` 保存设置。
@@ -39,17 +39,17 @@ C:\Users\YourName\AppData\Roaming\obsidian\Obsidian Sandbox\.obsidian\plugins\ne
 ### 在 Obsidian 中启用
 
 1. 退出 Obsidian，或关闭目标 Vault。
-2. 将项目根目录中的整个 `nexus-wallpaper` 文件夹复制到 Vault 的 `.obsidian/plugins/` 目录。
+2. 将项目根目录中的整个 `obsidian-wallpaper` 文件夹复制到 Vault 的 `.obsidian/plugins/` 目录。
 3. 重新打开 Obsidian 和目标 Vault。
 4. 打开 **设置 → 社区插件**，确认“受限模式”已关闭。
 5. 在已安装插件中找到并启用 **Obsidian Wallpapers**。
 6. 打开 Obsidian 设置中的 **Obsidian Wallpapers** 插件页开始配置。
 
-如果插件没有出现在列表中，请确认三个文件直接位于 `.obsidian/plugins/nexus-wallpaper/` 中，然后重启 Obsidian。
+如果插件没有出现在列表中，请确认三个文件直接位于 `.obsidian/plugins/obsidian-wallpaper/` 中，然后重启 Obsidian。
 
 ### 从源代码构建或部署
 
-普通图片、视频和 Scene 实时播放不需要额外安装 Node.js。Scene 实时渲染失败时生成完整静态帧需要本机 Node.js 22 或更新版本。修改源代码后，如需重新生成插件并更新可复制的 `nexus-wallpaper` 文件夹，在项目根目录运行：
+普通图片、视频和 Scene 实时播放不需要额外安装 Node.js。Scene 实时渲染失败时生成完整静态帧需要本机 Node.js 22 或更新版本。修改源代码后，如需重新生成插件并更新可复制的 `obsidian-wallpaper` 文件夹，在项目根目录运行：
 
 ```powershell
 npm ci
@@ -57,13 +57,13 @@ npm run typecheck
 npm run build
 ```
 
-构建会在项目根目录生成 `main.js`，并自动把三个运行文件和许可文件同步到 `nexus-wallpaper` 与 `release/nexus-wallpaper` 安装文件夹。也可以在构建后使用脚本部署到现有 Vault：
+构建会在项目根目录生成 `main.js`，并自动把三个运行文件和许可文件同步到 `obsidian-wallpaper` 与 `release/obsidian-wallpaper` 安装文件夹。也可以在构建后使用脚本部署到现有 Vault：
 
 ```powershell
 npm run deploy -- --vault "C:\Users\YourName\AppData\Roaming\obsidian\Obsidian Sandbox"
 ```
 
-将路径替换为目标 Vault 的绝对路径。目标路径必须是已存在且含有 `.obsidian` 的 Vault。脚本复制三个运行文件和两个许可文件并通过 SHA-256 校验，不会复制或覆盖 `data.json`。
+将路径替换为目标 Vault 的绝对路径。目标路径必须是已存在且含有 `.obsidian` 的 Vault。脚本复制三个运行文件和两个许可文件并通过 SHA-256 校验。已有 `data.json` 不会被覆盖；首次从旧 ID 升级时，会复制旧插件的设置。
 
 ## 使用
 
@@ -112,13 +112,21 @@ Wallpaper Engine 集成默认关闭，仅适用于安装了 Steam 和 Wallpaper 
 
 ## 更新与卸载
 
+### 从旧的 nexus-wallpaper 升级
+
+1. 停用旧插件并关闭 Vault，备份旧目录中的 `data.json`。
+2. 将 `.obsidian/plugins/nexus-wallpaper` 重命名为 `.obsidian/plugins/obsidian-wallpaper`，再复制新版安装包中的文件覆盖同名文件，保留 `data.json`。
+3. 重新打开 Vault，在社区插件中启用 **Obsidian Wallpapers**。不要同时启用旧、新两份插件。
+
+使用部署脚本时，若新目录尚无设置，它会自动复制旧目录的 `data.json`；随后停用旧插件并启用新插件。
+
 - **更新**：用新版的 `main.js`、`manifest.json` 和 `styles.css` 覆盖插件目录中的同名文件，然后重新加载 Obsidian 或重启 Vault。保留现有 `data.json` 可保留设置。
-- **设置位置**：`<Vault>/.obsidian/plugins/nexus-wallpaper/data.json`。删除此文件会重置设置。
-- **卸载**：先在社区插件设置中停用 Obsidian Wallpapers，关闭 Obsidian，再删除 `nexus-wallpaper` 文件夹。想保留设置时，先备份 `data.json`。
+- **设置位置**：`<Vault>/.obsidian/plugins/obsidian-wallpaper/data.json`。删除此文件会重置设置。
+- **卸载**：先在社区插件设置中停用 Obsidian Wallpapers，关闭 Obsidian，再删除 `obsidian-wallpaper` 文件夹。想保留设置时，先备份 `data.json`。
 
 ## 常见问题与兼容性
 
-**插件没有出现在列表中**：确认目录为 `.obsidian/plugins/nexus-wallpaper/`，三个文件直接位于其中；确认 Obsidian 是桌面版且版本不低于 1.13.0，并关闭受限模式，然后重启 Obsidian。
+**插件没有出现在列表中**：确认目录为 `.obsidian/plugins/obsidian-wallpaper/`，三个文件直接位于其中；确认 Obsidian 是桌面版且版本不低于 1.13.0，并关闭受限模式，然后重启 Obsidian。
 
 **启用后看不到壁纸**：确认已打开 **启用壁纸**；来源路径从 Vault 根目录开始填写，文件扩展名受支持。轮播时，确认文件夹路径有效且其中有支持的媒体文件。
 
@@ -126,6 +134,6 @@ Wallpaper Engine 集成默认关闭，仅适用于安装了 Steam 和 Wallpaper 
 
 **窗口无法拖动**：关闭 **毛玻璃模糊**。
 
-本插件使用 ID `nexus-wallpaper`。Obsidian 在同一个 Vault 中按插件 ID 管理插件；如果该 Vault 已安装使用此 ID 的旧版插件，本版本会替换其插件文件并继续使用现有 `data.json`，不能在同一 Vault 并行安装两份相同 ID 的插件。Scene 实时渲染使用本机回环来源读取已扫描项目文件，URL 使用随机令牌；静态渲染在隐藏的外部 Node.js 子进程中运行。若两种渲染都失败，插件保留预览图并报告错误。
+本插件从 1.1.1 起使用 ID `obsidian-wallpaper`，安装目录与此 ID 一致。旧 ID 的设置迁移步骤见上文。Scene 实时渲染使用本机回环来源读取已扫描项目文件，URL 使用随机令牌；静态渲染在隐藏的外部 Node.js 子进程中运行。若两种渲染都失败，插件保留预览图并报告错误。
 
 本项目采用 [MIT 许可证](LICENSE)。

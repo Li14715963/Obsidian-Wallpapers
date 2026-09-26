@@ -1,6 +1,6 @@
 import { App, Notice, Modal, PluginSettingTab, Setting, TFile } from "obsidian";
 import { AbstractInputSuggest } from "obsidian";
-import type NexusWallpaperPlugin from "./main";
+import type ObsidianWallpaperPlugin from "./main";
 import { listVaultMedia } from "./sources";
 import { DEFAULT_SETTINGS } from "./types";
 
@@ -61,10 +61,10 @@ class ConfirmModal extends Modal {
   }
 }
 
-export class NexusWallpaperSettingTab extends PluginSettingTab {
-  private readonly plugin: NexusWallpaperPlugin;
+export class ObsidianWallpaperSettingTab extends PluginSettingTab {
+  private readonly plugin: ObsidianWallpaperPlugin;
 
-  constructor(app: App, plugin: NexusWallpaperPlugin) {
+  constructor(app: App, plugin: ObsidianWallpaperPlugin) {
     super(app, plugin);
     this.plugin = plugin;
   }

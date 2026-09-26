@@ -10,11 +10,11 @@ npm run typecheck
 npm run build
 ```
 
-The required plugin files are `main.js`, `manifest.json`, and `styles.css`. The build syncs them, along with `LICENSE` and `THIRD_PARTY_NOTICES.md`, into the ready-to-copy `nexus-wallpaper/` and `release/nexus-wallpaper/` folders.
+The required plugin files are `main.js`, `manifest.json`, and `styles.css`. The build syncs them, along with `LICENSE` and `THIRD_PARTY_NOTICES.md`, into the ready-to-copy `obsidian-wallpaper/` and `release/obsidian-wallpaper/` folders.
 
 ## Install manually
 
-Copy the entire root `nexus-wallpaper/` folder into `<vault>/.obsidian/plugins/`, keeping any existing `data.json`, then enable **Obsidian Wallpapers** in Obsidian's Community plugins settings.
+Copy the entire root `obsidian-wallpaper/` folder into `<vault>/.obsidian/plugins/`, keeping any existing `data.json`, then enable **Obsidian Wallpapers** in Obsidian's Community plugins settings.
 
 ## Deploy with the helper
 
@@ -24,7 +24,7 @@ Pass the destination Vault explicitly. The directory must already contain `.obsi
 npm run deploy -- --vault "C:\path\to\test-vault"
 ```
 
-The script checks the manifest ID and build files, copies the three runtime files and two license files, and verifies the copied files with SHA-256. It does not infer a Vault from the project location and does not copy or overwrite plugin settings.
+The script checks the manifest ID and build files, copies the three runtime files and two license files, and verifies the copied files with SHA-256. It does not infer a Vault from the project location or overwrite existing settings. When migrating from `nexus-wallpaper`, it copies the legacy data.json only if the new installation has none.
 
 ## Verify in Obsidian
 
@@ -33,14 +33,14 @@ Use a test Vault to check image and video sources, glass-only mode, folder rotat
 Before using CLI commands, enable **Settings → General → Advanced → Command line interface** in the Obsidian instance that has the test Vault open.
 
 ```powershell
-obsidian vault="<test-vault-name>" plugin:reload id=nexus-wallpaper
+obsidian vault="<test-vault-name>" plugin:reload id=obsidian-wallpaper
 obsidian vault="<test-vault-name>" dev:errors
 obsidian vault="<test-vault-name>" dev:console level=error
 obsidian vault="<test-vault-name>" dev:screenshot path="<screenshot-path>"
 ```
 
-When verifying, confirm that disabling the plugin removes its wallpaper layer, body attributes, and `--nwp-*` variables. Test Wallpaper Engine scanning only on a Windows machine with Steam and Wallpaper Engine available. Scene projects use static preview images; web projects are best effort.
+When verifying, confirm that disabling the plugin removes its wallpaper layer, body attributes, and `--nwp-*` variables. Test Wallpaper Engine scanning only on a Windows machine with Steam and Wallpaper Engine available. Scene projects use the bundled live renderer with complete static frame fallback; web projects are best effort.
 
 ## Settings compatibility
 
-The plugin ID remains `nexus-wallpaper`, so an existing installation uses the same `data.json` settings. Keep one copy of this plugin ID per Vault.
+The plugin ID is `obsidian-wallpaper` from 1.1.1 onward. For a manual upgrade from `nexus-wallpaper`, disable the old plugin, close the Vault, back up data.json, rename the old directory to `obsidian-wallpaper`, and replace its runtime files with the new package. Reopen the Vault and enable Obsidian Wallpapers. Keep only the new plugin enabled.

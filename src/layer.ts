@@ -1,12 +1,12 @@
 import { Notice } from "obsidian";
-import type { NexusWallpaperSettings } from "./types";
+import type { ObsidianWallpaperSettings } from "./types";
 import type { ResolvedSource } from "./sources";
 import type { MediaServer } from "./we-server";
 import type { StaticSceneRenderer } from "./scene-static";
 import crypto from "crypto";
 
-export const LAYER_ID = "nexus-wallpaper-layer";
-export const SCRIM_ID = "nexus-wallpaper-scrim";
+export const LAYER_ID = "obsidian-wallpaper-layer";
+export const SCRIM_ID = "obsidian-wallpaper-scrim";
 export const ACTIVE_ATTR = "data-nwp-wallpaper";
 export const SIDEBAR_ATTR = "data-nwp-sidebar-glass";
 export const BLUR_ATTR = "data-nwp-glass-blur";
@@ -59,7 +59,7 @@ export class WallpaperLayer {
 
   constructor(private readonly urls: MediaServer, private readonly staticRenderer: StaticSceneRenderer) {}
 
-  sync(settings: NexusWallpaperSettings, source: ResolvedSource | null): void {
+  sync(settings: ObsidianWallpaperSettings, source: ResolvedSource | null): void {
     if (!source) {
       this.releaseMedia();
       this.removeLayers();
@@ -69,7 +69,7 @@ export class WallpaperLayer {
     this.applyEffects(settings);
   }
 
-  handleVisibility(settings: NexusWallpaperSettings): void {
+  handleVisibility(settings: ObsidianWallpaperSettings): void {
     if (!settings.pauseOnHidden) return;
     for (const video of this.mediaVideos()) {
       if (document.hidden) {
@@ -91,7 +91,7 @@ export class WallpaperLayer {
     document.body.removeAttribute(BLUR_ATTR);
   }
 
-  private mountMedia(source: ResolvedSource, settings: NexusWallpaperSettings): void {
+  private mountMedia(source: ResolvedSource, settings: ObsidianWallpaperSettings): void {
     if (!this.layer) {
       this.layer = document.createElement("div");
       this.layer.id = LAYER_ID;
@@ -127,7 +127,7 @@ export class WallpaperLayer {
     return Array.from(this.media.querySelectorAll("video"));
   }
 
-  private buildMedia(source: ResolvedSource, settings: NexusWallpaperSettings): HTMLElement {
+  private buildMedia(source: ResolvedSource, settings: ObsidianWallpaperSettings): HTMLElement {
     if (source.kind === "scene") return this.buildScene(source, settings);
     if (source.kind !== "web" && settings.objectFit === "contain-blur") {
       const wrapper = document.createElement("div");
@@ -139,7 +139,7 @@ export class WallpaperLayer {
     return this.buildFront(source);
   }
 
-  private buildScene(source: ResolvedSource, settings: NexusWallpaperSettings): HTMLElement {
+  private buildScene(source: ResolvedSource, settings: ObsidianWallpaperSettings): HTMLElement {
     const scene = source.scene!;
     const wrapper = document.createElement("div");
     wrapper.className = "nwp-scene";
@@ -390,7 +390,7 @@ export class WallpaperLayer {
    * settings to CSS custom properties. Identity values stay "none"/unset so
    * the compositor does not keep permanent filter layers alive.
    */
-  private applyEffects(s: NexusWallpaperSettings): void {
+  private applyEffects(s: ObsidianWallpaperSettings): void {
     const body = document.body;
     const style = body.style;
 
@@ -466,7 +466,7 @@ function composeTransform(wallpaperBlur: number, flip: boolean): string {
   return parts.length > 0 ? parts.join(" ") : "none";
 }
 
-function sceneFit(settings: NexusWallpaperSettings): string {
+function sceneFit(settings: ObsidianWallpaperSettings): string {
   // WebWallGL calls stretched filling "stretch"; its "fill" means cover.
   return settings.objectFit === "fill" ? "stretch" : settings.objectFit === "contain-blur" ? "contain" : settings.objectFit;
 }
