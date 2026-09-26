@@ -146,7 +146,7 @@ export class WallpaperLayer {
     const reportError = (): void => {
       if (this.errorReportedFor === source.key) return;
       this.errorReportedFor = source.key;
-      new Notice(`Nexus Wallpaper: 壁纸加载失败（${source.label}）`);
+      new Notice(`Obsidian Wallpapers: 壁纸加载失败（${source.label}）`);
     };
 
     if (source.kind === "web") {

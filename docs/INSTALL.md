@@ -10,11 +10,11 @@ npm run typecheck
 npm run build
 ```
 
-The plugin files are `main.js`, `manifest.json`, and `styles.css`.
+The plugin files are `main.js`, `manifest.json`, and `styles.css`. The build also syncs them into the root `nexus-wallpaper/` folder, which is the ready-to-copy Obsidian plugin folder.
 
 ## Install manually
 
-Create `<vault>/.obsidian/plugins/nexus-wallpaper/` if it does not exist. Copy the three plugin files there, keeping any existing `data.json`, then enable **Nexus Wallpaper** in Obsidian's Community plugins settings.
+Copy the entire root `nexus-wallpaper/` folder into `<vault>/.obsidian/plugins/`, keeping any existing `data.json`, then enable **Obsidian Wallpapers** in Obsidian's Community plugins settings.
 
 ## Deploy with the helper
 

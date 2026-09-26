@@ -1,24 +1,53 @@
-# Nexus Wallpaper
+# Obsidian Wallpapers
 
-An Obsidian desktop plugin that places an image or video behind the workspace and adds adjustable translucent glass surfaces.
+Obsidian Wallpapers 是 Obsidian 桌面插件，可将图片或视频显示在工作区背景，并为笔记阅读区和侧栏添加可调节的玻璃外观。
 
-- **Version:** 1.0.0
-- **Author:** Lin
-- **Plugin ID:** `nexus-wallpaper`
-- **Minimum Obsidian version:** 1.13.0
-- **Desktop only:** Yes
+| 项目 | 信息 |
+| --- | --- |
+| 版本 | 1.0.0 |
+| 作者 | Lin |
+| 插件 ID | `nexus-wallpaper` |
+| 最低 Obsidian 版本 | 1.13.0 |
+| 平台 | Obsidian 桌面版 |
 
-## Features
+## 安装
 
-- Use images and videos in the vault, HTTP(S) sources, or a folder playlist.
-- Adjust wallpaper fit, playback rate, flip, blur, brightness, contrast, saturation, and dimming.
-- Configure the central reading surface and sidebars independently, including blur, tint, opacity, and accent color.
-- Pause media while Obsidian is hidden and clean up the wallpaper layer and CSS variables when disabled.
-- Optionally discover local Wallpaper Engine projects on Windows. Video projects play through a loopback media server; scene projects show their preview image; web projects are best effort.
+### 需要安装的文件
 
-## Build
+本项目根目录中的 `nexus-wallpaper` 文件夹就是可直接安装的完整插件包，里面已放好以下三个文件：
 
-Requirements: Node.js and npm. From this directory run:
+- `main.js`：插件运行代码
+- `manifest.json`：插件名称、版本和兼容性信息
+- `styles.css`：壁纸和玻璃外观样式
+
+将整个 `nexus-wallpaper` 文件夹复制到目标 Vault 的 `.obsidian/plugins/` 目录。安装后的完整路径为：
+
+```text
+<Vault 路径>/.obsidian/plugins/nexus-wallpaper/
+```
+
+例如，安装到 Obsidian Sandbox 时：
+
+```text
+C:\Users\YourName\AppData\Roaming\obsidian\Obsidian Sandbox\.obsidian\plugins\nexus-wallpaper\
+```
+
+如果 `plugins` 目录不存在，请先创建它。Windows 资源管理器可能隐藏 `.obsidian`；可以在地址栏直接输入路径，或打开“显示隐藏的项目”。不要把项目根目录、`src` 或 `node_modules` 复制到 `plugins` 中。Obsidian 首次加载插件后会在插件目录自动创建 `data.json` 保存设置。
+
+### 在 Obsidian 中启用
+
+1. 退出 Obsidian，或关闭目标 Vault。
+2. 将项目根目录中的整个 `nexus-wallpaper` 文件夹复制到 Vault 的 `.obsidian/plugins/` 目录。
+3. 重新打开 Obsidian 和目标 Vault。
+4. 打开 **设置 → 社区插件**，确认“受限模式”已关闭。
+5. 在已安装插件中找到并启用 **Obsidian Wallpapers**。
+6. 打开 Obsidian 设置中的 **Obsidian Wallpapers** 插件页开始配置。
+
+如果插件没有出现在列表中，请确认三个文件直接位于 `.obsidian/plugins/nexus-wallpaper/` 中，然后重启 Obsidian。
+
+### 从源代码构建或部署
+
+普通安装不需要 Node.js。修改源代码后，如需重新生成插件并更新可复制的 `nexus-wallpaper` 文件夹，在项目根目录运行：
 
 ```powershell
 npm ci
@@ -26,28 +55,75 @@ npm run typecheck
 npm run build
 ```
 
-The build creates `main.js` beside `manifest.json` and `styles.css`.
-
-## Install
-
-Copy `main.js`, `manifest.json`, and `styles.css` into `<vault>/.obsidian/plugins/nexus-wallpaper/`, then enable **Nexus Wallpaper** in Obsidian's Community plugins settings. The plugin's settings remain in that folder's `data.json`.
-
-On Windows, the helper script can deploy to a chosen vault after building:
+构建会在项目根目录生成 `main.js`，并自动把最新的 `main.js`、`manifest.json` 和 `styles.css` 同步到 `nexus-wallpaper` 安装文件夹。也可以在构建后使用脚本部署到现有 Vault：
 
 ```powershell
-npm run deploy -- --vault "C:\path\to\your-vault"
+npm run deploy -- --vault "C:\Users\YourName\AppData\Roaming\obsidian\Obsidian Sandbox"
 ```
 
-The path must be absolute and point to a vault that already contains `.obsidian`. The script copies only the three plugin files and verifies each copy with SHA-256. It never overwrites `data.json`.
+将路径替换为目标 Vault 的绝对路径。目标路径必须是已存在且含有 `.obsidian` 的 Vault。脚本只复制三个插件文件并通过 SHA-256 校验，不会复制或覆盖 `data.json`。
 
-## Use
+## 使用
 
-Open **Settings → Nexus Wallpaper**, enable the feature, then choose a vault media path, folder playlist, HTTP(S) URL, or Wallpaper Engine item. Leaving the source empty enables glass styling over the current theme background. The command palette includes **Nexus Wallpaper: 启用/停用壁纸** and **Nexus Wallpaper: 轮播：换下一张**.
+打开 Obsidian 设置中的 **Obsidian Wallpapers** 插件页。设置更改后会自动保存。插件初始处于停用状态，需要先打开 **启用壁纸**。
 
-## Compatibility notes
+### 使用图片或视频
 
-- Wallpaper Engine discovery uses Windows Steam registry and common installation paths. Its integration is optional and disabled by default.
-- Wallpaper Engine scene projects display a static preview; real-time scene rendering is not included. Web projects may not load every relative resource.
-- Files outside the vault are not accepted as ordinary wallpaper paths. Wallpaper Engine media is served by the plugin's local loopback server.
-- The plugin uses the same ID as the Nexus Wallpaper plugin it was copied from. Installing this build in a vault updates that plugin and reuses its existing settings; do not install both copies in one vault.
-- The plugin is adapted from the MIT-licensed dsh-wallpaper-engine project. See [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
+1. 在“壁纸”区域打开 **启用壁纸**。
+2. 在 **壁纸来源** 输入 Vault 内的相对路径，例如 `Assets/wallpaper.jpg`。也可以从输入框的媒体建议中选择文件。
+3. 或者输入 `http://` / `https://` 媒体地址。
+
+支持的图片格式：`png`、`jpg`、`jpeg`、`gif`、`webp`、`avif`、`bmp`、`svg`。支持的视频格式：`mp4`、`webm`、`m4v`、`ogv`。普通来源只接受 Vault 内路径或 HTTP(S) 地址，不接受任意本机磁盘路径。视频会静音循环播放；**窗口隐藏时暂停**默认开启。
+
+### 只使用玻璃外观
+
+保持 **壁纸来源** 和 **轮播文件夹** 为空，并打开 **启用壁纸**。插件会在当前主题背景上应用玻璃外观，不显示额外壁纸。
+
+### 设置文件夹轮播
+
+1. 在 Vault 中准备一个存放图片或视频的文件夹。
+2. 将 Vault 相对路径填入 **轮播文件夹**。
+3. 设置 **轮播间隔（分钟）**，默认是 30 分钟。
+4. 打开 **启用壁纸**。
+
+插件会递归读取该文件夹及子文件夹中的支持格式，并按文件路径排序轮播。设置轮播文件夹后，它优先于 **壁纸来源**。想立即切换时，在命令面板运行 **Obsidian Wallpapers: 轮播：换下一张**。
+
+### 调整外观
+
+- **填充方式**：裁剪铺满、完整显示、模糊背景补边或拉伸铺满。
+- **玻璃外观**：调整模糊、透明度、颜色、暗化遮罩、边框和笔记阅读面的不透明度。
+- **侧栏玻璃**：单独设置侧栏玻璃效果、模糊、透明度和颜色。
+- **壁纸画面**：调整壁纸模糊、亮度、对比度、饱和度、视频播放速率和水平镜像。
+- **毛玻璃模糊**：如果开启后 Obsidian 窗口无法拖动，请关闭该选项，改用静态半透明底。
+
+也可以在命令面板运行 **Obsidian Wallpapers: 启用/停用壁纸**，快速切换效果。停用后插件会移除壁纸层并恢复原主题外观。
+
+### 可选：Wallpaper Engine
+
+Wallpaper Engine 集成默认关闭，仅适用于安装了 Steam 和 Wallpaper Engine 的 Windows 电脑：
+
+1. 在设置页的 **Wallpaper Engine** 区域打开集成开关。
+2. 点击 **扫描**。
+3. 找到项目后点击对应的 **使用** 按钮。
+
+视频项目可以播放；场景项目显示静态预览图；网页项目可能因本地相对资源加载方式而显示不完整。没有安装 Steam 和 Wallpaper Engine 时，可以忽略此功能。
+
+## 更新与卸载
+
+- **更新**：用新版的 `main.js`、`manifest.json` 和 `styles.css` 覆盖插件目录中的同名文件，然后重新加载 Obsidian 或重启 Vault。保留现有 `data.json` 可保留设置。
+- **设置位置**：`<Vault>/.obsidian/plugins/nexus-wallpaper/data.json`。删除此文件会重置设置。
+- **卸载**：先在社区插件设置中停用 Obsidian Wallpapers，关闭 Obsidian，再删除 `nexus-wallpaper` 文件夹。想保留设置时，先备份 `data.json`。
+
+## 常见问题与兼容性
+
+**插件没有出现在列表中**：确认目录为 `.obsidian/plugins/nexus-wallpaper/`，三个文件直接位于其中；确认 Obsidian 是桌面版且版本不低于 1.13.0，并关闭受限模式，然后重启 Obsidian。
+
+**启用后看不到壁纸**：确认已打开 **启用壁纸**；来源路径从 Vault 根目录开始填写，文件扩展名受支持。轮播时，确认文件夹路径有效且其中有支持的媒体文件。
+
+**Wallpaper Engine 扫描不到项目**：确认本机已安装 Steam 和 Wallpaper Engine，打开集成后再点 **扫描**。扫描依赖 Windows 上的 Steam 安装位置。
+
+**窗口无法拖动**：关闭 **毛玻璃模糊**。
+
+本插件使用 ID `nexus-wallpaper`。Obsidian 在同一个 Vault 中按插件 ID 管理插件；如果该 Vault 已安装使用此 ID 的旧版插件，本版本会替换其插件文件并继续使用现有 `data.json`，不能在同一 Vault 并行安装两份相同 ID 的插件。Wallpaper Engine 场景使用静态预览图，不提供实时场景渲染。
+
+本插件改编自 MIT 许可的 dsh-wallpaper-engine 项目，详见 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)。

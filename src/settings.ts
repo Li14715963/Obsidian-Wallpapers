@@ -214,7 +214,7 @@ export class NexusWallpaperSettingTab extends PluginSettingTab {
           b.setDisabled(true).setButtonText("扫描中…");
           const n = await this.plugin.scanWe();
           b.setDisabled(false).setButtonText("扫描");
-          new Notice(`Nexus Wallpaper: 找到 ${n} 个 Wallpaper Engine 壁纸`);
+          new Notice(`Obsidian Wallpapers: 找到 ${n} 个 Wallpaper Engine 壁纸`);
           this.display();
         })
       );
