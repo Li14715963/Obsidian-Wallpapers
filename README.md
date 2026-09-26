@@ -14,7 +14,7 @@ Obsidian Wallpapers 是 Obsidian 桌面插件，可将图片或视频显示在�
 
 ### 需要安装的文件
 
-本项目根目录中的 `nexus-wallpaper` 文件夹就是可直接安装的完整插件包，里面已放好以下三个文件：
+本项目根目录中的 `nexus-wallpaper` 文件夹就是可直接安装的完整插件包，包含以下三个运行文件，以及 `LICENSE` 和 `THIRD_PARTY_NOTICES.md`：
 
 - `main.js`：插件运行代码
 - `manifest.json`：插件名称、版本和兼容性信息
@@ -55,13 +55,13 @@ npm run typecheck
 npm run build
 ```
 
-构建会在项目根目录生成 `main.js`，并自动把最新的 `main.js`、`manifest.json` 和 `styles.css` 同步到 `nexus-wallpaper` 安装文件夹。也可以在构建后使用脚本部署到现有 Vault：
+构建会在项目根目录生成 `main.js`，并自动把三个运行文件和许可文件同步到 `nexus-wallpaper` 与 `release/nexus-wallpaper` 安装文件夹。也可以在构建后使用脚本部署到现有 Vault：
 
 ```powershell
 npm run deploy -- --vault "C:\Users\YourName\AppData\Roaming\obsidian\Obsidian Sandbox"
 ```
 
-将路径替换为目标 Vault 的绝对路径。目标路径必须是已存在且含有 `.obsidian` 的 Vault。脚本只复制三个插件文件并通过 SHA-256 校验，不会复制或覆盖 `data.json`。
+将路径替换为目标 Vault 的绝对路径。目标路径必须是已存在且含有 `.obsidian` 的 Vault。脚本复制三个运行文件和两个许可文件并通过 SHA-256 校验，不会复制或覆盖 `data.json`。
 
 ## 使用
 
@@ -126,4 +126,4 @@ Wallpaper Engine 集成默认关闭，仅适用于安装了 Steam 和 Wallpaper 
 
 本插件使用 ID `nexus-wallpaper`。Obsidian 在同一个 Vault 中按插件 ID 管理插件；如果该 Vault 已安装使用此 ID 的旧版插件，本版本会替换其插件文件并继续使用现有 `data.json`，不能在同一 Vault 并行安装两份相同 ID 的插件。Wallpaper Engine 场景使用静态预览图，不提供实时场景渲染。
 
-本插件改编自 MIT 许可的 dsh-wallpaper-engine 项目，详见 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)。
+本项目采用 [MIT 许可证](LICENSE)。插件改编自同样采用 MIT 许可的 dsh-wallpaper-engine 项目，详见 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)。

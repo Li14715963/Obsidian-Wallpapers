@@ -2,6 +2,7 @@
   "name": "obsidian-wallpapers",
   "version": "1.0.0",
   "private": true,
+  "license": "MIT",
   "type": "module",
   "author": "Lin",
   "description": "Wallpaper layer and liquid-glass UI skin for Obsidian.",

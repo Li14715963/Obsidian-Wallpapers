@@ -10,7 +10,7 @@ npm run typecheck
 npm run build
 ```
 
-The plugin files are `main.js`, `manifest.json`, and `styles.css`. The build also syncs them into the root `nexus-wallpaper/` folder, which is the ready-to-copy Obsidian plugin folder.
+The required plugin files are `main.js`, `manifest.json`, and `styles.css`. The build syncs them, along with `LICENSE` and `THIRD_PARTY_NOTICES.md`, into the ready-to-copy `nexus-wallpaper/` and `release/nexus-wallpaper/` folders.
 
 ## Install manually
 
@@ -24,7 +24,7 @@ Pass the destination Vault explicitly. The directory must already contain `.obsi
 npm run deploy -- --vault "C:\path\to\test-vault"
 ```
 
-The script checks the manifest ID and build files, copies the three plugin files, and verifies the copied files with SHA-256. It does not infer a Vault from the project location and does not copy or overwrite plugin settings.
+The script checks the manifest ID and build files, copies the three runtime files and two license files, and verifies the copied files with SHA-256. It does not infer a Vault from the project location and does not copy or overwrite plugin settings.
 
 ## Verify in Obsidian
 

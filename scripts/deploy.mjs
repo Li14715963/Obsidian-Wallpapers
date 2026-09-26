@@ -4,7 +4,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 const projectRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
-const files = ["main.js", "manifest.json", "styles.css"];
+const files = ["main.js", "manifest.json", "styles.css", "LICENSE", "THIRD_PARTY_NOTICES.md"];
 
 function getVaultArgument(args) {
   for (let i = 0; i < args.length; i += 1) {
