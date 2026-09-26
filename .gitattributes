@@ -1,2 +1,5 @@
 # Keep pinned upstream asset bytes intact across Windows checkouts.
 vendor/** -text
+# Generated bundles contain embedded assets and must keep their build bytes.
+/nexus-wallpaper/main.js -text
+/release/nexus-wallpaper/main.js -text
