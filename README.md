@@ -63,7 +63,7 @@ npm run build
 npm run deploy -- --vault "C:\Users\YourName\AppData\Roaming\obsidian\Obsidian Sandbox"
 ```
 
-将路径替换为目标 Vault 的绝对路径。目标路径必须是已存在且含有 `.obsidian` 的 Vault。脚本复制三个运行文件和两个许可文件并通过 SHA-256 校验。已有 `data.json` 不会被覆盖；首次从旧 ID 升级时，会复制旧插件的设置。
+将路径替换为目标 Vault 的绝对路径。目标路径必须是已存在且含有 `.obsidian` 的 Vault。脚本复制三个运行文件和两个许可文件并通过 SHA-256 校验。已有 `data.json` 不会被覆盖。
 
 ## 使用
 
@@ -112,14 +112,6 @@ Wallpaper Engine 集成默认关闭，仅适用于安装了 Steam 和 Wallpaper 
 
 ## 更新与卸载
 
-### 从旧的 nexus-wallpaper 升级
-
-1. 停用旧插件并关闭 Vault，备份旧目录中的 `data.json`。
-2. 将 `.obsidian/plugins/nexus-wallpaper` 重命名为 `.obsidian/plugins/obsidian-wallpaper`，再复制新版安装包中的文件覆盖同名文件，保留 `data.json`。
-3. 重新打开 Vault，在社区插件中启用 **Obsidian Wallpapers**。不要同时启用旧、新两份插件。
-
-使用部署脚本时，若新目录尚无设置，它会自动复制旧目录的 `data.json`；随后停用旧插件并启用新插件。
-
 - **更新**：用新版的 `main.js`、`manifest.json` 和 `styles.css` 覆盖插件目录中的同名文件，然后重新加载 Obsidian 或重启 Vault。保留现有 `data.json` 可保留设置。
 - **设置位置**：`<Vault>/.obsidian/plugins/obsidian-wallpaper/data.json`。删除此文件会重置设置。
 - **卸载**：先在社区插件设置中停用 Obsidian Wallpapers，关闭 Obsidian，再删除 `obsidian-wallpaper` 文件夹。想保留设置时，先备份 `data.json`。
@@ -134,6 +126,6 @@ Wallpaper Engine 集成默认关闭，仅适用于安装了 Steam 和 Wallpaper 
 
 **窗口无法拖动**：关闭 **毛玻璃模糊**。
 
-本插件从 1.1.1 起使用 ID `obsidian-wallpaper`，安装目录与此 ID 一致。旧 ID 的设置迁移步骤见上文。Scene 实时渲染使用本机回环来源读取已扫描项目文件，URL 使用随机令牌；静态渲染在隐藏的外部 Node.js 子进程中运行。若两种渲染都失败，插件保留预览图并报告错误。
+本插件使用 ID `obsidian-wallpaper`，安装目录与此 ID 一致。Scene 实时渲染使用本机回环来源读取已扫描项目文件，URL 使用随机令牌；静态渲染在隐藏的外部 Node.js 子进程中运行。若两种渲染都失败，插件保留预览图并报告错误。
 
 本项目采用 [MIT 许可证](LICENSE)。

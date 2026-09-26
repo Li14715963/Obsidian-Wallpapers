@@ -24,7 +24,7 @@ Pass the destination Vault explicitly. The directory must already contain `.obsi
 npm run deploy -- --vault "C:\path\to\test-vault"
 ```
 
-The script checks the manifest ID and build files, copies the three runtime files and two license files, and verifies the copied files with SHA-256. It does not infer a Vault from the project location or overwrite existing settings. When migrating from `nexus-wallpaper`, it copies the legacy data.json only if the new installation has none.
+The script checks the manifest ID and build files, copies the three runtime files and two license files, and verifies the copied files with SHA-256. It does not infer a Vault from the project location or overwrite existing settings.
 
 ## Verify in Obsidian
 
@@ -41,6 +41,6 @@ obsidian vault="<test-vault-name>" dev:screenshot path="<screenshot-path>"
 
 When verifying, confirm that disabling the plugin removes its wallpaper layer, body attributes, and `--nwp-*` variables. Test Wallpaper Engine scanning only on a Windows machine with Steam and Wallpaper Engine available. Scene projects use the bundled live renderer with complete static frame fallback; web projects are best effort.
 
-## Settings compatibility
+## Settings
 
-The plugin ID is `obsidian-wallpaper` from 1.1.1 onward. For a manual upgrade from `nexus-wallpaper`, disable the old plugin, close the Vault, back up data.json, rename the old directory to `obsidian-wallpaper`, and replace its runtime files with the new package. Reopen the Vault and enable Obsidian Wallpapers. Keep only the new plugin enabled.
+Settings are stored in `<vault>/.obsidian/plugins/obsidian-wallpaper/data.json`. Keep this file when updating the plugin to preserve your configuration.
