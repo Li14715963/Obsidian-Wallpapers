@@ -58,6 +58,11 @@
   background: transparent;
 }
 
+.nwp-scene { position: relative; width: 100%; height: 100%; overflow: hidden; }
+.nwp-scene > .nwp-media { position: absolute; inset: 0; }
+.nwp-scene-live { border: 0; background: transparent; }
+.nwp-scene-preview { z-index: 1; }
+
 /* --- contain-blur ratio padding ---------------------------------------------
    A blurred cover copy fills the letterbox bars behind a contained front, so
    odd-ratio sources (e.g. phone wallpapers) never show dead black bars. */

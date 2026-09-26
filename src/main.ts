@@ -1,4 +1,4 @@
-import { Plugin } from "obsidian";
+import { Notice, Plugin } from "obsidian";
 import { DEFAULT_SETTINGS, sanitizeSettings } from "./types";
 import type { NexusWallpaperSettings } from "./types";
 import { isWeSource, listFolderMedia, resolveSource, resolveWeItem, weIdOf } from "./sources";
@@ -7,17 +7,25 @@ import { scanWallpapers } from "./we-scan";
 import { MediaServer } from "./we-server";
 import { WallpaperLayer } from "./layer";
 import { NexusWallpaperSettingTab } from "./settings";
+import { StaticSceneRenderer } from "./scene-static";
 
 export default class NexusWallpaperPlugin extends Plugin {
   settings: NexusWallpaperSettings = DEFAULT_SETTINGS;
-  private readonly wallpaper = new WallpaperLayer();
   private readonly weServer = new MediaServer();
+  private readonly staticRenderer = new StaticSceneRenderer();
+  private readonly wallpaper = new WallpaperLayer(this.weServer, this.staticRenderer);
+  private applyGeneration = 0;
   private rotationTimer: number | null = null;
   private rotationIndex = 0;
   private scanning = false;
 
   async onload(): Promise<void> {
     this.settings = sanitizeSettings(await this.loadData());
+    if (this.settings.weCache.some((item) => item.type === "scene" && !item.scenePkgPath)) {
+      this.settings.weCache = scanWallpapers();
+      this.settings.weScannedAt = new Date().toISOString();
+      await this.saveData(this.settings);
+    }
 
     this.addSettingTab(new NexusWallpaperSettingTab(this.app, this));
 
@@ -50,8 +58,10 @@ export default class NexusWallpaperPlugin extends Plugin {
   }
 
   onunload(): void {
+    this.applyGeneration++;
     this.stopRotation();
     this.wallpaper.destroy();
+    this.staticRenderer.stop();
     this.weServer.stop();
   }
 
@@ -86,12 +96,20 @@ export default class NexusWallpaperPlugin extends Plugin {
   }
 
   private async applyAll(): Promise<void> {
+    const generation = ++this.applyGeneration;
     if (!this.settings.enabled) {
       this.stopRotation();
       this.wallpaper.destroy();
       return;
     }
-    this.wallpaper.sync(this.settings, await this.currentSource());
+    let source: ResolvedSource | null;
+    try { source = await this.currentSource(); }
+    catch (error) {
+      if (generation === this.applyGeneration) new Notice(`Obsidian Wallpapers: ${String(error)}`);
+      return;
+    }
+    if (generation !== this.applyGeneration) return;
+    this.wallpaper.sync(this.settings, source);
     this.scheduleRotation();
   }
 
@@ -130,7 +148,7 @@ export default class NexusWallpaperPlugin extends Plugin {
     const files = listFolderMedia(this.app, this.settings.playlistFolder);
     if (files.length === 0) return;
     this.rotationIndex = (this.rotationIndex + 1) % files.length;
-    this.wallpaper.sync(this.settings, await this.currentSource());
+    await this.applyAll();
   }
 
   /** Settings tab entry point for "reset playlist position on folder change". */

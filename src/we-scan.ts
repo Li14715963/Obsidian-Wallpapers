@@ -44,6 +44,7 @@ function discoverLibraries(): string[] {
   try {
     const out = execSync("reg query HKCU\\Software\\Valve\\Steam /v SteamPath", {
       encoding: "utf8",
+      windowsHide: true,
       timeout: 4000
     });
     const match = /REG_SZ\s+(.+)/.exec(out);
@@ -136,14 +137,18 @@ function readProject(dir: string, items: WeItem[], id: string): void {
   if (!type) return;
 
   const file = typeof project.file === "string" ? project.file : "";
-  let mediaPath = file ? path.join(dir, file) : "";
+  let mediaPath = file ? projectFile(dir, file) : "";
   if (type === "video" && (!mediaPath || !fs.existsSync(mediaPath))) {
     mediaPath = findFirst(dir, VIDEO_EXTS);
   }
   if (type !== "scene" && !mediaPath) return;
+  const scenePkgPath = type === "scene"
+    ? ["scene.pkg", "scenes/scene.pkg", "gifscene.pkg"].map((p) => projectFile(dir, p))
+        .find((p) => !!p) ?? ""
+    : "";
 
   const previewName = typeof project.preview === "string" ? project.preview : "";
-  let previewPath = previewName ? path.join(dir, previewName) : "";
+  let previewPath = previewName ? projectFile(dir, previewName) : "";
   if (!previewPath || !fs.existsSync(previewPath)) {
     previewPath = findFirst(dir, new Set([".jpg", ".jpeg", ".png", ".gif"]));
   }
@@ -153,6 +158,7 @@ function readProject(dir: string, items: WeItem[], id: string): void {
     title: typeof project.title === "string" && project.title.trim() ? project.title : id,
     type,
     mediaPath,
+    scenePkgPath,
     previewPath,
     previewSize: previewPath ? imageDimensions(previewPath) : ""
   });
@@ -213,12 +219,25 @@ function classify(project: Record<string, unknown>, dir: string): WeType | null 
 function findFirst(dir: string, exts: Set<string>): string {
   try {
     for (const entry of fs.readdirSync(dir)) {
-      if (exts.has(path.extname(entry).toLowerCase())) return path.join(dir, entry);
+      if (exts.has(path.extname(entry).toLowerCase())) {
+        const file = projectFile(dir, entry);
+        if (file) return file;
+      }
     }
   } catch {
     return "";
   }
   return "";
+}
+
+/** Project metadata cannot register files outside its own directory, including symlinks. */
+function projectFile(dir: string, name: string): string {
+  if (!name || path.isAbsolute(name) || name.includes(":")) return "";
+  try {
+    const root = fs.realpathSync(dir);
+    const real = fs.realpathSync(path.resolve(root, name));
+    return real.toLowerCase().startsWith((root + path.sep).toLowerCase()) && fs.statSync(real).isFile() ? real : "";
+  } catch { return ""; }
 }
 
 function isDir(p: string): boolean {

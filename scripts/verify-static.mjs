@@ -1,0 +1,52 @@
+import esbuild from 'esbuild';
+import fs from 'node:fs';
+import path from 'node:path';
+import assert from 'node:assert/strict';
+import { createRequire } from 'node:module';
+
+const dir = process.argv[2];
+if (!dir || !path.isAbsolute(dir)) throw new Error('Pass absolute validation directory');
+const cpu = await esbuild.build({ entryPoints: ['src/scene-frame-runner.mjs'], bundle: true,
+  platform: 'node', format: 'cjs', write: false });
+const bundle = await esbuild.build({ entryPoints: ['src/scene-static.ts'], bundle: true,
+  platform: 'node', format: 'cjs', write: false, plugins: [{name:'assets',setup(build){
+    build.onResolve({filter:/^scene-assets$/},()=>({path:'assets',namespace:'test'}));
+    build.onLoad({filter:/.*/,namespace:'test'},()=>({contents:`export default {cpu:${JSON.stringify(cpu.outputFiles[0].text)}}`,loader:'js'}));
+  }}] });
+const modulePath = path.join(dir, 'static-test.cjs');
+fs.writeFileSync(modulePath, bundle.outputFiles[0].text);
+const { StaticSceneRenderer } = createRequire(import.meta.url)(modulePath);
+global.window = { innerWidth: 1280, innerHeight: 720 };
+global.devicePixelRatio = 1;
+const projects = JSON.parse(fs.readFileSync(path.join(dir,'scene-projects.json')));
+const item = projects.find(x=>x.id==='2476371899');
+const fixtureDir = path.join(dir,'static-fixture'); fs.mkdirSync(fixtureDir,{recursive:true});
+fs.copyFileSync(item.scenePkgPath,path.join(fixtureDir,'scene.pkg'));
+fs.copyFileSync(path.join(path.dirname(item.scenePkgPath),'project.json'),path.join(fixtureDir,'project.json'));
+const fixture = {...item,scenePkgPath:path.join(fixtureDir,'scene.pkg')};
+const renderer = new StaticSceneRenderer();
+renderer.cacheDir = path.join(dir,'test-cache');
+renderer.runnerPath = path.join(renderer.cacheDir,'runner.cjs');
+const first = await renderer.render(fixture,new AbortController().signal);
+assert.ok(fs.statSync(first).size>4096);
+const second = await renderer.render(fixture,new AbortController().signal);
+assert.equal(first,second);
+const future = new Date(Date.now()+2000);
+fs.utimesSync(fixture.scenePkgPath,future,future);
+const third = await renderer.render(fixture,new AbortController().signal);
+assert.notEqual(first,third);
+const controller = new AbortController();
+const pending = renderer.render(projects.reduce((a,b)=>a.bytes>b.bytes?a:b),controller.signal);
+setTimeout(()=>controller.abort(),30);
+await assert.rejects(pending,/已取消/);
+await new Promise(r=>setTimeout(r,500));
+assert.equal(renderer.child,null);
+assert.equal(fs.readdirSync(renderer.cacheDir).filter(x=>x.endsWith('.tmp')).length,0);
+const saved = renderer.findNode;
+renderer.findNode = ()=>null;
+await assert.rejects(renderer.render(fixture,new AbortController().signal),/未找到 Node/);
+renderer.findNode = saved;
+renderer.stop();
+const result={completeFrame:'passed',cacheHit:'passed',mtimeInvalidation:'passed',cancellation:'passed',processCleanup:'passed',temporaryCleanup:'passed',nodeUnavailable:'passed'};
+fs.writeFileSync(path.join(dir,'static-tests.json'),JSON.stringify(result,null,2));
+console.log(result);

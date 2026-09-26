@@ -1,6 +1,6 @@
 {
   "name": "obsidian-wallpapers",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "private": true,
   "license": "MIT",
   "type": "module",
@@ -13,6 +13,7 @@
     "deploy": "node scripts/deploy.mjs"
   },
   "devDependencies": {
+    "@shaderfrog/glsl-parser": "^7.0.1",
     "@types/node": "^22.13.10",
     "builtin-modules": "^5.0.0",
     "esbuild": "^0.25.0",

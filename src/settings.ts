@@ -189,6 +189,14 @@ export class NexusWallpaperSettingTab extends PluginSettingTab {
 
     new Setting(containerEl).setName("Wallpaper Engine").setHeading();
 
+    this.dropdown("Scene 渲染模式", "实时优先；30 秒无首帧或运行失败时用完整静态场景帧。静态模式需要本机 Node.js。", () => s.sceneRenderMode, async (v) => {
+      s.sceneRenderMode = v as typeof s.sceneRenderMode;
+    }, [["live", "实时（自动静态兜底）"], ["static", "完整静态场景帧"], ["preview", "仅预览图"]]);
+
+    this.dropdown("Scene 帧率", "仅实时模式生效；默认 30 fps", () => String(s.sceneFps), async (v) => {
+      s.sceneFps = Number(v) as typeof s.sceneFps;
+    }, [["15", "15 fps"], ["30", "30 fps"], ["60", "60 fps"]]);
+
     new Setting(containerEl)
       .setName("启用 Wallpaper Engine 集成")
       .setDesc("扫描本机 Steam 上的 Wallpaper Engine 壁纸并在下方选择；关闭时不扫描、行为与 v1 一致")
@@ -222,7 +230,7 @@ export class NexusWallpaperSettingTab extends PluginSettingTab {
     if (s.weEnabled) {
       const typeLabels: Record<string, string> = {
         video: "视频壁纸",
-        scene: "场景壁纸（静态预览帧，画质受预览图限制）",
+        scene: "场景壁纸（实时 WebGL / 完整静态帧）",
         web: "网页壁纸（部分本地资源可能不完整）"
       };
       for (const item of s.weCache) {
@@ -242,6 +250,7 @@ export class NexusWallpaperSettingTab extends PluginSettingTab {
             }
             b.setButtonText("使用").onClick(async () => {
               s.source = source;
+              s.playlistFolder = "";
               await this.persist();
               this.display();
             });

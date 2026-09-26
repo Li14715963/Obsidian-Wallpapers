@@ -1,6 +1,9 @@
 import { Notice } from "obsidian";
 import type { NexusWallpaperSettings } from "./types";
 import type { ResolvedSource } from "./sources";
+import type { MediaServer } from "./we-server";
+import type { StaticSceneRenderer } from "./scene-static";
+import crypto from "crypto";
 
 export const LAYER_ID = "nexus-wallpaper-layer";
 export const SCRIM_ID = "nexus-wallpaper-scrim";
@@ -46,6 +49,15 @@ export class WallpaperLayer {
   private media: HTMLElement | null = null;
   private mediaKey = "";
   private errorReportedFor = "";
+  private sceneAbort: AbortController | null = null;
+  private sceneTimer: number | null = null;
+  private sceneListener: ((event: MessageEvent) => void) | null = null;
+  private sceneFrame: HTMLIFrameElement | null = null;
+  private sceneOrigin = "";
+  private sceneBridgeId = "";
+  private sceneResize: (() => void) | null = null;
+
+  constructor(private readonly urls: MediaServer, private readonly staticRenderer: StaticSceneRenderer) {}
 
   sync(settings: NexusWallpaperSettings, source: ResolvedSource | null): void {
     if (!source) {
@@ -66,6 +78,7 @@ export class WallpaperLayer {
         void video.play().catch(() => {});
       }
     }
+    this.sceneCommand(document.hidden ? "pause" : "resume");
   }
 
   destroy(): void {
@@ -87,6 +100,7 @@ export class WallpaperLayer {
     // The DOM structure depends on the fit mode (contain-blur wraps two media
     // elements), so the key must cover it or switching modes leaks the wrapper.
     const structureKey = `${source.key}\u0000${
+      source.kind === "scene" ? `scene-${settings.sceneRenderMode}-${settings.objectFit === "contain-blur" ? "pad" : "plain"}` :
       source.kind !== "web" && settings.objectFit === "contain-blur" ? "pad" : "plain"
     }`;
     if (this.mediaKey !== structureKey) {
@@ -100,6 +114,10 @@ export class WallpaperLayer {
     if (videos.length > 0 && (!settings.pauseOnHidden || !document.hidden)) {
       for (const video of videos) void video.play().catch(() => {});
     }
+    if (source.kind === "scene") {
+      this.sceneCommand("fit", sceneFit(settings));
+      this.sceneCommand("fps", settings.sceneFps);
+    }
   }
 
   /** Every <video> in the mounted media (one for plain modes, two for contain-blur). */
@@ -110,6 +128,7 @@ export class WallpaperLayer {
   }
 
   private buildMedia(source: ResolvedSource, settings: NexusWallpaperSettings): HTMLElement {
+    if (source.kind === "scene") return this.buildScene(source, settings);
     if (source.kind !== "web" && settings.objectFit === "contain-blur") {
       const wrapper = document.createElement("div");
       wrapper.className = "nwp-fill";
@@ -118,6 +137,135 @@ export class WallpaperLayer {
       return wrapper;
     }
     return this.buildFront(source);
+  }
+
+  private buildScene(source: ResolvedSource, settings: NexusWallpaperSettings): HTMLElement {
+    const scene = source.scene!;
+    const wrapper = document.createElement("div");
+    wrapper.className = "nwp-scene";
+    wrapper.dataset.sceneStatus = "preview";
+    let backdrop: HTMLImageElement | null = null;
+    if (settings.objectFit === "contain-blur") {
+      backdrop = document.createElement("img");
+      backdrop.className = "nwp-fill-backdrop";
+      backdrop.src = scene.previewUrl;
+      backdrop.alt = "";
+      wrapper.appendChild(backdrop);
+    }
+    const preview = document.createElement("img");
+    preview.className = "nwp-media nwp-scene-preview";
+    preview.src = scene.previewUrl;
+    preview.alt = "";
+    wrapper.appendChild(preview);
+    if (settings.sceneRenderMode === "preview") return wrapper;
+    const abort = new AbortController();
+    this.sceneAbort = abort;
+    let fallingBack = false;
+    const fallback = (reason: string): void => {
+      if (abort.signal.aborted || fallingBack || wrapper.dataset.sceneStatus === "static") return;
+      fallingBack = true;
+      this.clearSceneTimer();
+      this.sceneFrame?.remove(); this.sceneFrame = null;
+      if (this.sceneResize) window.removeEventListener("resize", this.sceneResize);
+      this.sceneResize = null;
+      if (!preview.isConnected) wrapper.appendChild(preview);
+      if (settings.sceneRenderMode === "preview") return;
+      wrapper.dataset.sceneStatus = "rendering-static";
+      void this.staticRenderer.render(scene.item, abort.signal).then(async (output) => {
+        if (abort.signal.aborted) return;
+        const url = await this.urls.urlFor(output);
+        if (abort.signal.aborted || !url) return;
+        const image = document.createElement("img");
+        image.className = "nwp-media nwp-scene-static";
+        image.src = url;
+        image.alt = "";
+        image.onload = () => {
+          if (abort.signal.aborted) return;
+          preview.remove();
+          if (backdrop) backdrop.src = url;
+          wrapper.dataset.sceneStatus = "static";
+        };
+        image.onerror = () => this.sceneError(wrapper, `${reason}; 静态图片读取失败`);
+        wrapper.appendChild(image);
+      }).catch((error) => {
+        if (!abort.signal.aborted) this.sceneError(wrapper, `${reason}; ${error.message}`);
+      });
+    };
+    if (settings.sceneRenderMode === "static") { fallback("静态模式"); return wrapper; }
+    if (!scene.liveUrl) { fallback("未找到 scene.pkg，请重新扫描壁纸"); return wrapper; }
+    const bridgeId = crypto.randomBytes(16).toString("hex");
+    const url = new URL(scene.liveUrl);
+    url.searchParams.set("fit", sceneFit(settings));
+    url.searchParams.set("sceneFps", String(settings.sceneFps));
+    url.searchParams.set("bridge", bridgeId);
+    url.searchParams.set("parentOrigin", window.location.origin);
+    const iframe = document.createElement("iframe");
+    iframe.className = "nwp-media nwp-scene-live";
+    iframe.setAttribute("sandbox", "allow-scripts allow-same-origin");
+    iframe.setAttribute("tabindex", "-1");
+    iframe.setAttribute("scrolling", "no");
+    iframe.onerror = () => fallback("实时渲染页加载失败");
+    iframe.onload = () => {
+      if (settings.pauseOnHidden && document.hidden) this.sceneCommand("pause");
+    };
+    this.sceneFrame = iframe;
+    this.sceneOrigin = url.origin;
+    this.sceneBridgeId = bridgeId;
+    this.sceneListener = (event: MessageEvent): void => {
+      if (event.source !== iframe.contentWindow || event.origin !== url.origin || event.data?.nwpScene !== bridgeId) return;
+      if (event.data.type === "trace" || event.data.type === "boot") {
+        wrapper.dataset.sceneTrace = JSON.stringify(event.data.detail).slice(0, 300);
+      }
+      if (event.data.type === "ready") {
+        if (abort.signal.aborted) return;
+        this.clearSceneTimer();
+        if (settings.objectFit === "contain-blur" && Number(event.data.detail?.aspect) > 0) {
+          const aspect = Number(event.data.detail.aspect);
+          this.sceneResize = (): void => {
+            const { width, height } = wrapper.getBoundingClientRect();
+            const w = Math.min(width, height * aspect), h = w / aspect;
+            iframe.style.width = `${w}px`; iframe.style.height = `${h}px`;
+            iframe.style.left = `${(width - w) / 2}px`; iframe.style.top = `${(height - h) / 2}px`;
+            iframe.style.right = "auto"; iframe.style.bottom = "auto";
+          };
+          window.addEventListener("resize", this.sceneResize);
+          this.sceneResize();
+        }
+        preview.remove();
+        wrapper.dataset.sceneStatus = "live";
+        if (settings.pauseOnHidden && document.hidden) this.sceneCommand("pause");
+      } else if (event.data.type === "stalled" || event.data.type === "error") {
+        fallback(`实时渲染失败：${typeof event.data.detail === "string" ? event.data.detail.slice(0, 160) : event.data.type}`);
+      }
+    };
+    window.addEventListener("message", this.sceneListener);
+    iframe.src = url.href;
+    wrapper.appendChild(iframe);
+    let visibleLoadMs = 0;
+    let lastLoadCheck = performance.now();
+    this.sceneTimer = window.setInterval(() => {
+      const now = performance.now();
+      if (!settings.pauseOnHidden || !document.hidden) visibleLoadMs += now - lastLoadCheck;
+      lastLoadCheck = now;
+      if (visibleLoadMs >= 30000) fallback("实时首帧 30 秒超时");
+    }, 500);
+    return wrapper;
+  }
+
+  private sceneError(wrapper: HTMLElement, reason: string): void {
+    wrapper.dataset.sceneStatus = "error";
+    wrapper.dataset.sceneError = reason;
+    new Notice(`Obsidian Wallpapers: ${reason}`, 10000);
+  }
+
+  private sceneCommand(command: string, value?: unknown): void {
+    if (!this.sceneFrame?.contentWindow) return;
+    this.sceneFrame.contentWindow.postMessage({ nwpScene: this.sceneBridgeId, command, value }, this.sceneOrigin);
+  }
+
+  private clearSceneTimer(): void {
+    if (this.sceneTimer !== null) window.clearTimeout(this.sceneTimer);
+    this.sceneTimer = null;
   }
 
   /** Blurred cover copy behind the letterboxed front (WE-style ratio padding). */
@@ -194,6 +342,13 @@ export class WallpaperLayer {
 
   /** A playing <video> is a GC root: always pause, drop the source and force a load before removal. */
   private releaseMedia(): void {
+    this.clearSceneTimer();
+    this.sceneAbort?.abort(); this.sceneAbort = null;
+    this.staticRenderer.stop();
+    if (this.sceneListener) window.removeEventListener("message", this.sceneListener);
+    this.sceneListener = null; this.sceneFrame = null; this.sceneOrigin = ""; this.sceneBridgeId = "";
+    if (this.sceneResize) window.removeEventListener("resize", this.sceneResize);
+    this.sceneResize = null;
     const media = this.media;
     this.media = null;
     this.mediaKey = "";
@@ -309,4 +464,9 @@ function composeTransform(wallpaperBlur: number, flip: boolean): string {
   if (scale !== 1) parts.push(`scale(${scale})`);
   if (flip) parts.push("scaleX(-1)");
   return parts.length > 0 ? parts.join(" ") : "none";
+}
+
+function sceneFit(settings: NexusWallpaperSettings): string {
+  // WebWallGL calls stretched filling "stretch"; its "fill" means cover.
+  return settings.objectFit === "fill" ? "stretch" : settings.objectFit === "contain-blur" ? "contain" : settings.objectFit;
 }

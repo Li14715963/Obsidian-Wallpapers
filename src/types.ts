@@ -1,4 +1,5 @@
-export type MediaKind = "video" | "image" | "web";
+export type MediaKind = "video" | "image" | "web" | "scene";
+export type SceneRenderMode = "live" | "static" | "preview";
 /** "contain-blur" renders contain plus a blurred cover copy behind (WE-style padding). */
 export type ObjectFit = "cover" | "contain" | "fill" | "contain-blur";
 /** Wallpaper Engine project categories we support (application is skipped at scan time). */
@@ -11,6 +12,8 @@ export interface WeItem {
   type: WeType;
   /** Absolute path of the playable file (video) or project html (web). */
   mediaPath: string;
+  /** Absolute path to scene.pkg, found independently of project.json's file field. */
+  scenePkgPath: string;
   /** Absolute path of the preview frame (scene fallback; empty for others when absent). */
   previewPath: string;
   /** "W×H" of the preview image (scene quality hint); "" when unknown. */
@@ -71,6 +74,8 @@ export interface NexusWallpaperSettings {
   /** Last scan result, persisted to avoid scanning on every boot. */
   weCache: WeItem[];
   weScannedAt: string;
+  sceneRenderMode: SceneRenderMode;
+  sceneFps: 15 | 30 | 60;
 }
 
 export const DEFAULT_SETTINGS: NexusWallpaperSettings = {
@@ -107,7 +112,9 @@ export const DEFAULT_SETTINGS: NexusWallpaperSettings = {
 
   weEnabled: false,
   weCache: [],
-  weScannedAt: ""
+  weScannedAt: "",
+  sceneRenderMode: "live",
+  sceneFps: 30
 };
 
 function clampNum(value: unknown, lo: number, hi: number, fallback: number): number {
@@ -133,6 +140,7 @@ function sanitizeWeCache(value: unknown): WeItem[] {
       title: str(r.title, id),
       type,
       mediaPath: str(r.mediaPath),
+      scenePkgPath: str(r.scenePkgPath),
       previewPath: str(r.previewPath),
       previewSize: str(r.previewSize)
     });
@@ -177,6 +185,8 @@ export function sanitizeSettings(raw: unknown): NexusWallpaperSettings {
 
     weEnabled: r.weEnabled === true,
     weCache: sanitizeWeCache(r.weCache),
-    weScannedAt: str(r.weScannedAt)
+    weScannedAt: str(r.weScannedAt),
+    sceneRenderMode: r.sceneRenderMode === "static" || r.sceneRenderMode === "preview" ? r.sceneRenderMode : "live",
+    sceneFps: r.sceneFps === 15 || r.sceneFps === 60 ? r.sceneFps : 30
   };
 }

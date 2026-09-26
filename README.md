@@ -6,7 +6,7 @@ Obsidian Wallpapers 是 Obsidian 桌面插件，可将图片或视频显示在�
 
 | 项目 | 信息 |
 | --- | --- |
-| 版本 | 1.0.0 |
+| 版本 | 1.1.0 |
 | 作者 | Lin |
 | 插件 ID | `nexus-wallpaper` |
 | 最低 Obsidian 版本 | 1.13.0 |
@@ -49,7 +49,7 @@ C:\Users\YourName\AppData\Roaming\obsidian\Obsidian Sandbox\.obsidian\plugins\ne
 
 ### 从源代码构建或部署
 
-普通安装不需要 Node.js。修改源代码后，如需重新生成插件并更新可复制的 `nexus-wallpaper` 文件夹，在项目根目录运行：
+普通图片、视频和 Scene 实时播放不需要额外安装 Node.js。Scene 实时渲染失败时生成完整静态帧需要本机 Node.js 22 或更新版本。修改源代码后，如需重新生成插件并更新可复制的 `nexus-wallpaper` 文件夹，在项目根目录运行：
 
 ```powershell
 npm ci
@@ -108,7 +108,7 @@ Wallpaper Engine 集成默认关闭，仅适用于安装了 Steam 和 Wallpaper 
 2. 点击 **扫描**。
 3. 找到项目后点击对应的 **使用** 按钮。
 
-视频项目可以播放；场景项目显示静态预览图；网页项目可能因本地相对资源加载方式而显示不完整。没有安装 Steam 和 Wallpaper Engine 时，可以忽略此功能。
+视频项目可以播放。Scene 项目默认通过随 `main.js` 离线打包的 WebWallGL 实时渲染，静音、30 fps；首帧 30 秒内未出现或运行中失败时，后台调用本机 Node.js 生成完整静态场景帧。加载期间保留预览图。可在设置中选“实时／静态／预览”与 15／30／60 fps。静态帧缓存位于 Windows `%LOCALAPPDATA%\Obsidian-Wallpapers\scene-cache`，不写入 Vault；缓存按壁纸文件时间、尺寸及渲染器版本失效。网页项目可能因本地相对资源加载方式而显示不完整。没有安装 Steam 和 Wallpaper Engine 时，可以忽略此功能。
 
 ## 更新与卸载
 
@@ -126,6 +126,6 @@ Wallpaper Engine 集成默认关闭，仅适用于安装了 Steam 和 Wallpaper 
 
 **窗口无法拖动**：关闭 **毛玻璃模糊**。
 
-本插件使用 ID `nexus-wallpaper`。Obsidian 在同一个 Vault 中按插件 ID 管理插件；如果该 Vault 已安装使用此 ID 的旧版插件，本版本会替换其插件文件并继续使用现有 `data.json`，不能在同一 Vault 并行安装两份相同 ID 的插件。Wallpaper Engine 场景使用静态预览图，不提供实时场景渲染。
+本插件使用 ID `nexus-wallpaper`。Obsidian 在同一个 Vault 中按插件 ID 管理插件；如果该 Vault 已安装使用此 ID 的旧版插件，本版本会替换其插件文件并继续使用现有 `data.json`，不能在同一 Vault 并行安装两份相同 ID 的插件。Scene 实时渲染使用本机回环来源读取已扫描项目文件，URL 使用随机令牌；静态渲染在隐藏的外部 Node.js 子进程中运行。若两种渲染都失败，插件保留预览图并报告错误。
 
 本项目采用 [MIT 许可证](LICENSE)。

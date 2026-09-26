@@ -1,0 +1,2 @@
+# Keep pinned upstream asset bytes intact across Windows checkouts.
+vendor/** -text

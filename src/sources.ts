@@ -10,11 +10,13 @@ export interface ResolvedSource {
   url: string;
   kind: MediaKind;
   label: string;
+  scene?: { item: WeItem; previewUrl: string; liveUrl: string };
 }
 
 export interface MediaUrlProvider {
   /** Registers an absolute path and returns its loopback media URL. */
   urlFor(absPath: string): Promise<string | null>;
+  sceneUrlFor(item: WeItem): Promise<string | null>;
 }
 
 export const WE_SCHEME = "we://";
@@ -29,15 +31,21 @@ export function weIdOf(ref: string): string {
 
 /**
  * Resolves a Wallpaper Engine item to a playable source: video via its media
- * file, scene as a static preview frame, web as a project html (best-effort:
+ * file, scene through the bundled renderer, web as a project html (best-effort:
  * wallpapers relying on relative local assets may render partially).
  */
 export async function resolveWeItem(id: string, cache: WeItem[], urls: MediaUrlProvider): Promise<ResolvedSource | null> {
   const item = cache.find((i) => i.id === id);
   if (!item) return null;
   if (item.type === "scene") {
-    const url = await urls.urlFor(item.previewPath);
-    return url ? { key: `we-scene\u0000${item.id}\u0000${item.previewPath}`, url, kind: "image", label: `${item.title}（预览帧）` } : null;
+    const previewUrl = await urls.urlFor(item.previewPath);
+    if (!previewUrl) return null;
+    const liveUrl = item.scenePkgPath ? await urls.sceneUrlFor(item) : null;
+    return {
+      key: `we-scene\u0000${item.id}\u0000${item.scenePkgPath}`,
+      url: previewUrl, kind: "scene", label: item.title,
+      scene: { item, previewUrl, liveUrl: liveUrl ?? "" }
+    };
   }
   const url = await urls.urlFor(item.mediaPath);
   if (!url) return null;
