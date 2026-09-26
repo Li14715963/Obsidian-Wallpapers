@@ -2,6 +2,8 @@
 
 Obsidian Wallpapers 是 Obsidian 桌面插件，可将图片或视频显示在工作区背景，并为笔记阅读区和侧栏添加可调节的玻璃外观。
 
+本项目参考并改编自 [dsh-wallpaper-engine](https://github.com/elysia395/dsh-wallpaper-engine) 的壁纸视觉与本地媒体服务方案，针对 Obsidian 桌面端实现了独立插件。原项目的版权及 MIT 许可声明见 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)。
+
 | 项目 | 信息 |
 | --- | --- |
 | 版本 | 1.0.0 |
@@ -126,4 +128,4 @@ Wallpaper Engine 集成默认关闭，仅适用于安装了 Steam 和 Wallpaper 
 
 本插件使用 ID `nexus-wallpaper`。Obsidian 在同一个 Vault 中按插件 ID 管理插件；如果该 Vault 已安装使用此 ID 的旧版插件，本版本会替换其插件文件并继续使用现有 `data.json`，不能在同一 Vault 并行安装两份相同 ID 的插件。Wallpaper Engine 场景使用静态预览图，不提供实时场景渲染。
 
-本项目采用 [MIT 许可证](LICENSE)。插件改编自同样采用 MIT 许可的 dsh-wallpaper-engine 项目，详见 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)。
+本项目采用 [MIT 许可证](LICENSE)。
