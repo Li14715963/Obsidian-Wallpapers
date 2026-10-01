@@ -14,6 +14,7 @@ export default class ObsidianWallpaperPlugin extends Plugin {
   private readonly weServer = new MediaServer();
   private readonly staticRenderer = new StaticSceneRenderer();
   private readonly wallpaper = new WallpaperLayer(this.weServer, this.staticRenderer);
+  private settingTab: ObsidianWallpaperSettingTab | null = null;
   private applyGeneration = 0;
   private rotationTimer: number | null = null;
   private rotationIndex = 0;
@@ -27,7 +28,8 @@ export default class ObsidianWallpaperPlugin extends Plugin {
       await this.saveData(this.settings);
     }
 
-    this.addSettingTab(new ObsidianWallpaperSettingTab(this.app, this));
+    this.settingTab = new ObsidianWallpaperSettingTab(this.app, this);
+    this.addSettingTab(this.settingTab);
 
     this.addCommand({
       id: "toggle-wallpaper",
@@ -97,8 +99,8 @@ export default class ObsidianWallpaperPlugin extends Plugin {
 
   private async applyAll(): Promise<void> {
     const generation = ++this.applyGeneration;
+    this.stopRotation();
     if (!this.settings.enabled) {
-      this.stopRotation();
       this.wallpaper.destroy();
       return;
     }
@@ -110,6 +112,7 @@ export default class ObsidianWallpaperPlugin extends Plugin {
     }
     if (generation !== this.applyGeneration) return;
     this.wallpaper.sync(this.settings, source);
+    this.settingTab?.updateWeSelection();
     this.scheduleRotation();
   }
 
@@ -130,10 +133,11 @@ export default class ObsidianWallpaperPlugin extends Plugin {
   }
 
   private scheduleRotation(): void {
-    this.stopRotation();
-    if (!this.settings.playlistFolder.trim()) return;
-    const minutes = Math.max(1, Math.round(this.settings.rotationInterval));
-    this.rotationTimer = window.setInterval(() => this.advanceRotation(), minutes * 60_000);
+    const folder = this.settings.playlistFolder.trim();
+    if (!folder && (!this.settings.weEnabled || !this.settings.weRotationEnabled ||
+      !isWeSource(this.settings.source) || this.settings.weCache.length < 2)) return;
+    const minutes = Math.max(1, Math.round(folder ? this.settings.rotationInterval : this.settings.weRotationInterval));
+    this.rotationTimer = window.setInterval(() => { void this.advanceRotation(); }, minutes * 60_000);
   }
 
   private stopRotation(): void {
@@ -144,11 +148,22 @@ export default class ObsidianWallpaperPlugin extends Plugin {
   }
 
   private async advanceRotation(): Promise<void> {
-    if (!this.settings.enabled || !this.settings.playlistFolder.trim()) return;
-    const files = listFolderMedia(this.app, this.settings.playlistFolder);
-    if (files.length === 0) return;
-    this.rotationIndex = (this.rotationIndex + 1) % files.length;
-    await this.applyAll();
+    if (!this.settings.enabled) return;
+    const folder = this.settings.playlistFolder.trim();
+    if (folder) {
+      const files = listFolderMedia(this.app, folder);
+      if (files.length === 0) return;
+      this.rotationIndex = (this.rotationIndex + 1) % files.length;
+      await this.applyAll();
+      return;
+    }
+    if (!this.settings.weEnabled || !isWeSource(this.settings.source) || this.settings.weCache.length < 2) return;
+    const items = this.settings.weCache;
+    const index = items.findIndex((item) => item.id === weIdOf(this.settings.source));
+    this.settings.source = `we://${items[(index + 1) % items.length].id}`;
+    const generation = this.applyGeneration;
+    await this.saveData(this.settings);
+    if (generation === this.applyGeneration) await this.applyAll();
   }
 
   /** Settings tab entry point for "reset playlist position on folder change". */

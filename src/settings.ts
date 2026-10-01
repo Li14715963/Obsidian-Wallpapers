@@ -1,5 +1,6 @@
 import { App, Notice, Modal, PluginSettingTab, Setting, TFile } from "obsidian";
 import { AbstractInputSuggest } from "obsidian";
+import type { ButtonComponent } from "obsidian";
 import type ObsidianWallpaperPlugin from "./main";
 import { listVaultMedia } from "./sources";
 import { DEFAULT_SETTINGS } from "./types";
@@ -63,6 +64,7 @@ class ConfirmModal extends Modal {
 
 export class ObsidianWallpaperSettingTab extends PluginSettingTab {
   private readonly plugin: ObsidianWallpaperPlugin;
+  private readonly weButtons = new Map<string, ButtonComponent>();
 
   constructor(app: App, plugin: ObsidianWallpaperPlugin) {
     super(app, plugin);
@@ -72,6 +74,7 @@ export class ObsidianWallpaperSettingTab extends PluginSettingTab {
   display(): void {
     const { containerEl } = this;
     containerEl.empty();
+    this.weButtons.clear();
 
     const s = this.plugin.settings;
 
@@ -209,6 +212,14 @@ export class ObsidianWallpaperSettingTab extends PluginSettingTab {
         })
       );
 
+    this.toggle("自动切换壁纸", "按扫描列表顺序切换 Wallpaper Engine 壁纸；需先在下方使用一张壁纸，轮播文件夹优先", () => s.weRotationEnabled, async (v) => {
+      s.weRotationEnabled = v;
+    });
+
+    this.slider("切换间隔（分钟）", "Wallpaper Engine 自动切换的间隔，1–480 分钟；默认 30 分钟", 1, 480, 1, () => s.weRotationInterval, async (v) => {
+      s.weRotationInterval = v;
+    });
+
     const count = s.weCache.length;
     new Setting(containerEl)
       .setName("重新扫描")
@@ -240,21 +251,19 @@ export class ObsidianWallpaperSettingTab extends PluginSettingTab {
           item.type === "scene" && item.previewSize
             ? `${typeLabels.scene} ${item.previewSize}`
             : (typeLabels[item.type] ?? item.type);
-        new Setting(containerEl)
+        const setting = new Setting(containerEl)
           .setName(item.title)
           .setDesc(desc)
           .addButton((b) => {
-            if (active) {
-              b.setButtonText("✓ 使用中").setDisabled(true);
-              return;
-            }
-            b.setButtonText("使用").onClick(async () => {
+            this.weButtons.set(source, b);
+            b.setButtonText(active ? "✓ 使用中" : "使用").setDisabled(active).onClick(async () => {
               s.source = source;
               s.playlistFolder = "";
               await this.persist();
               this.display();
             });
           });
+        setting.settingEl.dataset.weSource = source;
       }
     }
 
@@ -276,6 +285,14 @@ export class ObsidianWallpaperSettingTab extends PluginSettingTab {
           ).open();
         })
       );
+  }
+
+  /** Keep the selected-project buttons current when rotation runs with settings open. */
+  updateWeSelection(): void {
+    for (const [source, button] of this.weButtons) {
+      const active = source === this.plugin.settings.source;
+      button.setButtonText(active ? "✓ 使用中" : "使用").setDisabled(active);
+    }
   }
 
   private async persist(): Promise<void> {

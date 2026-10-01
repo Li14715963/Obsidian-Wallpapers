@@ -6,7 +6,7 @@ Obsidian Wallpapers 是 Obsidian 桌面插件，可将图片或视频显示在�
 
 | 项目 | 信息 |
 | --- | --- |
-| 版本 | 1.1.1 |
+| 版本 | 1.2.0 |
 | 作者 | Lin |
 | 插件 ID | `obsidian-wallpaper` |
 | 最低 Obsidian 版本 | 1.13.0 |
@@ -107,6 +107,9 @@ Wallpaper Engine 集成默认关闭，仅适用于安装了 Steam 和 Wallpaper 
 1. 在设置页的 **Wallpaper Engine** 区域打开集成开关。
 2. 点击 **扫描**。
 3. 找到项目后点击对应的 **使用** 按钮。
+4. 如需定时切换，打开同一区域的 **自动切换壁纸**，设置 **切换间隔（分钟）**（1–480 分钟，默认 30 分钟）。
+
+自动切换默认关闭；开启后从当前选中的 Wallpaper Engine 壁纸开始，按扫描列表顺序循环切换，并保存当前壁纸以便重启后接续。至少需要扫描到两张壁纸。关闭壁纸、关闭集成或关闭自动切换后停止计时；设置轮播文件夹时优先使用文件夹轮播及其间隔。命令 **Obsidian Wallpapers: 轮播：换下一张** 也可立即切换 Wallpaper Engine 壁纸。
 
 视频项目可以播放。Scene 项目默认通过随 `main.js` 离线打包的 WebWallGL 实时渲染，静音、30 fps；首帧 30 秒内未出现或运行中失败时，后台调用本机 Node.js 生成完整静态场景帧。加载期间保留预览图。可在设置中选“实时／静态／预览”与 15／30／60 fps。静态帧缓存位于 Windows `%LOCALAPPDATA%\Obsidian-Wallpapers\scene-cache`，不写入 Vault；缓存按壁纸文件时间、尺寸及渲染器版本失效。网页项目可能因本地相对资源加载方式而显示不完整。没有安装 Steam 和 Wallpaper Engine 时，可以忽略此功能。
 

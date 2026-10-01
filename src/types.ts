@@ -71,6 +71,10 @@ export interface ObsidianWallpaperSettings {
 
   /** Wallpaper Engine integration master switch; off = no scanning, v1 behavior. */
   weEnabled: boolean;
+  /** Rotate scanned Wallpaper Engine projects while a we:// source is selected. */
+  weRotationEnabled: boolean;
+  /** Wallpaper Engine rotation interval in minutes. */
+  weRotationInterval: number;
   /** Last scan result, persisted to avoid scanning on every boot. */
   weCache: WeItem[];
   weScannedAt: string;
@@ -111,6 +115,8 @@ export const DEFAULT_SETTINGS: ObsidianWallpaperSettings = {
   pauseOnHidden: true,
 
   weEnabled: false,
+  weRotationEnabled: false,
+  weRotationInterval: 30,
   weCache: [],
   weScannedAt: "",
   sceneRenderMode: "live",
@@ -184,6 +190,8 @@ export function sanitizeSettings(raw: unknown): ObsidianWallpaperSettings {
     pauseOnHidden: r.pauseOnHidden !== false,
 
     weEnabled: r.weEnabled === true,
+    weRotationEnabled: r.weRotationEnabled === true,
+    weRotationInterval: clampNum(r.weRotationInterval, 1, 480, DEFAULT_SETTINGS.weRotationInterval),
     weCache: sanitizeWeCache(r.weCache),
     weScannedAt: str(r.weScannedAt),
     sceneRenderMode: r.sceneRenderMode === "static" || r.sceneRenderMode === "preview" ? r.sceneRenderMode : "live",
